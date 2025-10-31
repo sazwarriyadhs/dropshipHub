@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { HashRouter, Route, Routes, Navigate } from 'react-router-dom'
+import { HashRouter, Route, Routes, Navigate, Outlet } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { CSpinner } from '@coreui/react'
 import './scss/style.scss'
@@ -16,10 +16,29 @@ const Page404 = React.lazy(() => import('./views/pages/page404/Page404'))
 const Page500 = React.lazy(() => import('./views/pages/page500/Page500'))
 const LandingPage = React.lazy(() => import('./views/landing/LandingPage'))
 const ProductPage = React.lazy(() => import('./views/landing/ProductPage'))
+const AboutUs = React.lazy(() => import('./views/landing/AboutUs'))
+
+// Layout Wrapper Components
+const PublicRoute = ({ children }) => {
+  const { user: currentUser } = useSelector((state) => state.auth)
+  return !currentUser ? children : <Navigate to="/dashboard" replace />
+}
+
+const ProtectedRoute = ({ children }) => {
+  const { user: currentUser } = useSelector((state) => state.auth)
+  return currentUser ? children : <Navigate to="/landing" replace />
+}
+
+// Layout Wrappers
+const LandingLayoutWrapper = () => {
+  return (
+    <LandingLayout>
+      <Outlet />
+    </LandingLayout>
+  )
+}
 
 const App = () => {
-  const { user: currentUser } = useSelector((state) => state.auth)
-
   return (
     <CartProvider>
       <HashRouter>
@@ -31,17 +50,46 @@ const App = () => {
           }
         >
           <Routes>
-            <Route exact path="/login" name="Login Page" element={<Login />} />
-            <Route exact path="/register" name="Register Page" element={<Register />} />
-            <Route exact path="/404" name="Page 404" element={<Page404 />} />
-            <Route exact path="/500" name="Page 500" element={<Page500 />} />
-            <Route path="/landing/products" element={<ProductPage />} />
-            <Route path="/landing" element={<LandingPage />} />
-            <Route
-              path="*"
-              name="Home"
-              element={currentUser ? <DefaultLayout /> : <Navigate to="/landing" replace />}
-            />
+            {/* Auth Routes - Public Only */}
+            <Route path="/login" element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            } />
+            <Route path="/register" element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            } />
+
+            {/* Landing Routes with Layout */}
+            <Route element={<LandingLayoutWrapper />}>
+              <Route path="/landing" element={<LandingPage />} />
+              <Route path="/landing/products" element={<ProductPage />} />
+              <Route path="/landing/about" element={<AboutUs />} />
+              <Route path="/landing/categories" element={<div>Categories Page</div>} />
+              <Route path="/landing/deals" element={<div>Hot Deals Page</div>} />
+            </Route>
+
+            {/* Standalone Public Pages */}
+            <Route path="/product/:id" element={<ProductPage />} />
+
+            {/* Error Pages */}
+            <Route path="/404" element={<Page404 />} />
+            <Route path="/500" element={<Page500 />} />
+
+            {/* Protected App Routes */}
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <DefaultLayout />
+              </ProtectedRoute>
+            } />
+
+            {/* Root Redirect */}
+            <Route path="/" element={<Navigate to="/landing" replace />} />
+
+            {/* Catch all route */}
+            <Route path="*" element={<Page404 />} />
           </Routes>
         </Suspense>
       </HashRouter>

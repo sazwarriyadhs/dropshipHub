@@ -55,6 +55,7 @@ const ProductList = React.lazy(() => import('./views/products/ProductList'))
 const ProductForm = React.lazy(() => import('./views/products/ProductForm'))
 const OrderList = React.lazy(() => import('./views/orders/OrderList'))
 const Cart = React.lazy(() => import('./views/cart/Cart')) // <-- Impor Cart
+const Checkout = React.lazy(() => import('./views/checkout/Checkout'))
 
 const routes = [
   { path: '/', exact: true, name: 'Home' },
@@ -108,6 +109,7 @@ const routes = [
   { path: '/products/edit/:id', name: 'Edit Product', element: ProductForm },
   { path: '/orders', name: 'My Orders', element: OrderList },
   { path: '/cart', name: 'Shopping Cart', element: Cart }, // <-- Tambahkan rute Cart
+  { path: '/checkout', name: 'Checkout', element: Checkout },
 ]
 
 export default routes
